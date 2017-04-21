@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -15,10 +16,12 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -29,6 +32,13 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.ReaderException;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -64,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
     private Semaphore mCapturePicture = new Semaphore(1);
+
+    private MultiFormatReader mMultiFormatReader;
 
 
     @Override
@@ -325,9 +337,37 @@ public class MainActivity extends AppCompatActivity {
             ByteBuffer buffer = image.getPlanes()[0].getBuffer();
             int len = buffer.remaining();
             Log.d(TAG, "onImageAvailable: len=" + len);
+            int imageWidth = image.getWidth();
+            int imageHeight = image.getHeight();
             byte[] data = new byte[len];
             buffer.get(data);
             image.close();
+            // Rect rect = getFramingRectInPreview();
+            if (mMultiFormatReader == null) {
+                mMultiFormatReader = new MultiFormatReader();
+            }
+            Rect rect = new Rect();
+
+            try {
+                CameraCharacteristics characteristics = mCameraManger.getCameraCharacteristics(mCameraId);
+                StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+            //PlanarYUVLuminanceSource planarYUVLuminanceSource = new PlanarYUVLuminanceSource(data, imageWidth, imageHeight, rect.left, rect.top, rect.width(), rect.height(), false);
+            Log.d(TAG, "onImageAvailable: imageWidth=" + imageWidth + ",imageHeight=" + imageHeight);
+            PlanarYUVLuminanceSource planarYUVLuminanceSource = new PlanarYUVLuminanceSource(data, imageWidth, imageHeight, 0, 0, imageWidth, imageHeight, false);
+            if (planarYUVLuminanceSource != null) {
+                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(planarYUVLuminanceSource));
+                try {
+                    Result result = mMultiFormatReader.decodeWithState(bitmap);
+                    Log.d(TAG, "onImageAvailable: result=" + result.getText());
+                } catch (ReaderException re) {
+                    Log.e(TAG, "onImageAvailable: ", re);
+                } finally {
+                    mMultiFormatReader.reset();
+                }
+            }
             mCapturePicture.release();
         }
     };
