@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.oobest.study.zxingdemo.MainActivity">
 
-    <TextureView
+    <com.oobest.study.zxingdemo.AutoFitTextureView
         android:id="@+id/textureView"
         android:layout_width="0dp"
         android:layout_height="0dp"
