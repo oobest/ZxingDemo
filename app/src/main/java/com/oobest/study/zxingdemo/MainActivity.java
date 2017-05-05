@@ -23,31 +23,25 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaCodec;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
-import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.Surface;
 import android.view.TextureView;
-import android.view.WindowManager;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.InvertedLuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
-import com.google.zxing.client.android.camera.CameraConfigurationUtils;
 import com.google.zxing.common.HybridBinarizer;
 
 import java.nio.ByteBuffer;
@@ -84,18 +78,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
 
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
-    }
-
-
-    private CameraManager mCameraManger;
-
     private AutoFitTextureView mTextureView;
 
     private Handler mHandler;
@@ -127,8 +109,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Rect mFramingRectInPreview;
 
-    private Point mScreenResolution;
-
     private int mSensorOrientation;
 
 
@@ -137,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mCameraManger = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
         mTextureView = (AutoFitTextureView) findViewById(R.id.textureView);
 
         mViewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
@@ -568,78 +547,55 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onImageAvailable(ImageReader reader) {
             Image image = reader.acquireLatestImage();
-
             ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-            int len = buffer.remaining();
-            Log.d(TAG, "onImageAvailable: len=" + len+",image.getPlanes()="
-                    +(image.getPlanes()[0].getBuffer().remaining()
-                    + image.getPlanes()[1].getBuffer().remaining())
-            );
-
             int imageWidth = image.getWidth();
             int imageHeight = image.getHeight();
-            byte[] data = new byte[len];
+            byte[] data = new byte[buffer.remaining()];
             buffer.get(data);
             image.close();
 
-            if (mMultiFormatReader == null) {
-                mMultiFormatReader = new MultiFormatReader();
-                Collection<BarcodeFormat> decodeFormats = EnumSet.noneOf(BarcodeFormat.class);
-                decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
-                decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
-                decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
-
-                final Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
-                hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-                hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
-                hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, new ViewfinderResultPointCallback(mViewfinderView));
-                mMultiFormatReader.setHints(hints);
-            }
             Rect rect = new Rect(mFramingRectInPreview);
+            Result result = decode(imageWidth, imageHeight, data, rect);
 
-
-            // Log.d(TAG, "onImageAvailable: imageWidth=" + imageWidth + ",imageHeight=" + imageHeight);
-
-            // Log.d(TAG, "onImageAvailable: FramingRectInPreview=" + rect.toString());
-
-
-            PlanarYUVLuminanceSource planarYUVLuminanceSource = new PlanarYUVLuminanceSource(data, imageWidth, imageHeight, rect.left, rect.top, rect.width(), rect.height(), false);
-            if (planarYUVLuminanceSource != null) {
-                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(planarYUVLuminanceSource));
-                try {
-                    Result result = mMultiFormatReader.decodeWithState(bitmap);
-                    Log.d(TAG, "onImageAvailable: result=" + result.getText());
-                } catch (ReaderException re) {
-                    Log.e(TAG, "onImageAvailable: ", re);
-                } finally {
-                    mMultiFormatReader.reset();
-                }
-            }
             mCapturePicture.release();
         }
     };
 
-    public static byte[] rotateYUV420Degree90(byte[] data, int imageWidth, int imageHeight) {
-        byte[] yuv = new byte[imageWidth * imageHeight * 3 / 2];
-        // Rotate the Y luma
-        int i = 0;
-        for (int x = 0; x < imageWidth; x++) {
-            for (int y = imageHeight - 1; y >= 0; y--) {
-                yuv[i] = data[y * imageWidth + x];
-                i++;
+    private Result decode(int imageWidth, int imageHeight, byte[] data, Rect rect) {
+        Result result = null;
+        MultiFormatReader multiFormatReader = getMultiFormatReader();
+
+        PlanarYUVLuminanceSource planarYUVLuminanceSource = new PlanarYUVLuminanceSource(data, imageWidth, imageHeight, rect.left, rect.top, rect.width(), rect.height(), false);
+        if (planarYUVLuminanceSource != null) {
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(planarYUVLuminanceSource));
+            try {
+                result = multiFormatReader.decodeWithState(bitmap);
+                Log.d(TAG, "decode: result=" + result.getText());
+            } catch (ReaderException re) {
+                Log.e(TAG, ": ", re);
+            } finally {
+                multiFormatReader.reset();
             }
         }
-        // Rotate the U and V color components
-        i = imageWidth * imageHeight * 3 / 2 - 1;
-        for (int x = imageWidth - 1; x > 0; x = x - 2) {
-            for (int y = 0; y < imageHeight / 2; y++) {
-                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth) + x];
-                i--;
-                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth)+ (x - 1)];
-                i--;
-            }
+        return result;
+    }
+
+
+    private MultiFormatReader getMultiFormatReader() {
+        if (mMultiFormatReader == null) {
+            mMultiFormatReader = new MultiFormatReader();
+            Collection<BarcodeFormat> decodeFormats = EnumSet.noneOf(BarcodeFormat.class);
+            decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
+            decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+            decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
+
+            final Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+            hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
+            hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
+            hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, new ViewfinderResultPointCallback(mViewfinderView));
+            mMultiFormatReader.setHints(hints);
         }
-        return yuv;
+        return mMultiFormatReader;
     }
 
 

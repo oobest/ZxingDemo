@@ -27,11 +27,6 @@ public class ViewfinderView extends View {
     private static final int MAX_RESULT_POINTS = 20;
     private static final int POINT_SIZE = 6;
 
-    private static final int MIN_FRAME_WIDTH = 240;
-    private static final int MIN_FRAME_HEIGHT = 240;
-    private static final int MAX_FRAME_WIDTH = 1200;
-    private static final int MAX_FRAME_HEIGHT = 675;
-
     private final Paint paint;
     private Bitmap resultBitmap;
     private final int maskColor;
