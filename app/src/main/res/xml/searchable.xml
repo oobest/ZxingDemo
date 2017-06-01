@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchable xmlns:android="http://schemas.android.com/apk/res/android"
+    android:label="@android:string/search_go"
+    android:hint="@string/search_hint"
+    android:icon="@mipmap/ic_launcher"
+    android:searchMode="queryRewriteFromText">
+
+</searchable>
