@@ -21,7 +21,7 @@ public class ApiClient {
     }
 
     public static final ApiService service = new Retrofit.Builder()
-            .baseUrl(ApiDefine.API_BASE_URL)
+            .baseUrl(ApiDefine.DATA_API_BASE_URL)
             .client(new OkHttpClient.Builder()
                     .addInterceptor(createUserAgentInterceptor())
                     .addInterceptor(createHttpLoggingInterceptor())
@@ -29,6 +29,15 @@ public class ApiClient {
             .addConverterFactory(GsonConverterFactory.create(EntityUtils.gson))
             .build()
             .create(ApiService.class);
+
+    public static final ApiKdService kdService = new Retrofit.Builder()
+            .baseUrl(ApiDefine.KD_API_URL)
+            .client(new OkHttpClient.Builder()
+                    .addInterceptor(createHttpLoggingInterceptor())
+                    .build())
+            .addConverterFactory(GsonConverterFactory.create(EntityUtils.gson))
+            .build()
+            .create(ApiKdService.class);
 
     private static Interceptor createUserAgentInterceptor() {
         return new Interceptor() {
@@ -38,7 +47,7 @@ public class ApiClient {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 return chain.proceed(chain.request().newBuilder()
-                       // .header(HEADER_USER_AGENT, ApiDefine.USER_AGENT)
+
                         .build());
             }
 

@@ -3,6 +3,7 @@ package com.oobest.study.zxingdemo;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.MenuItemCompat;
@@ -14,6 +15,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.oobest.study.zxingdemo.model.api.ApiClient;
+import com.oobest.study.zxingdemo.model.entity.Parcel;
+import com.oobest.study.zxingdemo.model.entity.Results;
+import com.oobest.study.zxingdemo.model.entity.Timestamp;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(MailParcelFragment.newInstance(getString(R.string.title_parcel)));
         adapter.addFragment(DashboardFragment.newInstance());
         mViewPager.setAdapter(adapter);
+
+
     }
 
 
@@ -99,4 +114,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ApiClient.service.getTimestamp().enqueue(new Callback<Timestamp>() {
+            @Override
+            public void onResponse(Call<Timestamp> call, Response<Timestamp> response) {
+                Timestamp time = response.body();
+                int current = (int) (System.currentTimeMillis() / 1000);
+                // Log.d(TAG, "onResponse: current=" + current);
+                // Log.d(TAG, "onResponse: time.getTimestamp()=" + time.getTimestamp());
+                if (Math.abs(current - time.getTimestamp()) > 60) {
+                    Toast.makeText(MainActivity.this, "请校正手机时间", Toast.LENGTH_SHORT);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainActivity.this.finish();
+                        }
+                    }, 4000);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Timestamp> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+            }
+        });
+    }
 }

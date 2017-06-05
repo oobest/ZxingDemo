@@ -1,5 +1,7 @@
 package com.oobest.study.zxingdemo.model.util;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -11,10 +13,14 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.lang.reflect.Type;
 
 public final class EntityUtils {
+
+    private static final DateTimeFormatter df = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
     private EntityUtils() {
     }
@@ -32,7 +38,8 @@ public final class EntityUtils {
 
         @Override
         public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return new DateTime(json.getAsString());
+            Log.d("DateTime", "deserialize: " + json.getAsString());
+            return DateTime.parse(json.getAsString(), df);
         }
 
     }
