@@ -6,7 +6,7 @@ import org.joda.time.DateTime;
  * Created by Albert.Ou on 2017/6/5.
  */
 
-public class Result {
+public class CreateResult {
     private String objectId;
     private DateTime createAt;
 

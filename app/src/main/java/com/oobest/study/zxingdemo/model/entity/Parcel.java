@@ -12,6 +12,7 @@ public class Parcel {
     private String objectId;
     private String orderId;
     private String status;
+    private String comCode;
     private DateTime updateAt;
     private DateTime createAt;
 
@@ -53,5 +54,13 @@ public class Parcel {
 
     public void setCreateAt(DateTime createAt) {
         this.createAt = createAt;
+    }
+
+    public String getComCode() {
+        return comCode;
+    }
+
+    public void setComCode(String comCode) {
+        this.comCode = comCode;
     }
 }
