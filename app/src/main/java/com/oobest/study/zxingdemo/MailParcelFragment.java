@@ -49,14 +49,15 @@ public class MailParcelFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_mail_parcel, container, false);
 
-//        ImageButton searchButton = (ImageButton) view.findViewById(R.id.search_button);
-//        searchButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), ParcelActivity.class);
-//                startActivity(intent);
-//            }
-//        });
+        ImageButton searchButton = (ImageButton) view.findViewById(R.id.search_button);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), CaptureActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
 
         return view;
     }

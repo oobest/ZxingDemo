@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
 
 public class CreateResult {
     private String objectId;
-    private DateTime createAt;
+    private DateTime createdAt;
 
     public String getObjectId() {
         return objectId;
@@ -18,11 +18,12 @@ public class CreateResult {
         this.objectId = objectId;
     }
 
-    public DateTime getCreateAt() {
-        return createAt;
+    public DateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(DateTime createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(DateTime createdAt) {
+        this.createdAt = createdAt;
     }
+
 }

@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
 
 public final class EntityUtils {
 
-    private static final DateTimeFormatter df = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter df = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
     private EntityUtils() {
     }
@@ -38,7 +38,7 @@ public final class EntityUtils {
 
         @Override
         public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            Log.d("DateTime", "deserialize: " + json.getAsString());
+            Log.d("EntityUtils", "deserialize: " + json.getAsString());
             return DateTime.parse(json.getAsString(), df);
         }
 

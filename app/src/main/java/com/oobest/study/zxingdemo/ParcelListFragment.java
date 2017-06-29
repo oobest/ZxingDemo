@@ -11,15 +11,15 @@ import android.view.ViewGroup;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DashboardFragment extends Fragment {
+public class ParcelListFragment extends Fragment {
 
 
-    public DashboardFragment() {
+    public ParcelListFragment() {
         // Required empty public constructor
     }
 
-    public static DashboardFragment newInstance() {
-        return new DashboardFragment();
+    public static ParcelListFragment newInstance() {
+        return new ParcelListFragment();
     }
 
 

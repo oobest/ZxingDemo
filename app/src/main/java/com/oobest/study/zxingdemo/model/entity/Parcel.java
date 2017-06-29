@@ -1,7 +1,5 @@
 package com.oobest.study.zxingdemo.model.entity;
 
-import com.google.gson.annotations.SerializedName;
-
 import org.joda.time.DateTime;
 
 /**
@@ -13,8 +11,8 @@ public class Parcel {
     private String orderId;
     private String status;
     private String comCode;
-    private DateTime updateAt;
-    private DateTime createAt;
+    private DateTime updatedAt;
+    private DateTime createdAt;
 
     public String getObjectId() {
         return objectId;
@@ -40,20 +38,21 @@ public class Parcel {
         this.status = status;
     }
 
-    public DateTime getUpdateAt() {
-        return updateAt;
+
+    public DateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateAt(DateTime updateAt) {
-        this.updateAt = updateAt;
+    public void setUpdatedAt(DateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public DateTime getCreateAt() {
-        return createAt;
+    public DateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(DateTime createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(DateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getComCode() {

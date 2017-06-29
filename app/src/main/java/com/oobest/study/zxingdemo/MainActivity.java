@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,16 +14,14 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.oobest.study.zxingdemo.model.api.ApiClient;
-import com.oobest.study.zxingdemo.model.entity.Parcel;
-import com.oobest.study.zxingdemo.model.entity.Results;
 import com.oobest.study.zxingdemo.model.entity.Timestamp;
+import com.oobest.study.zxingdemo.model.util.EntityUtils;
+import com.oobest.study.zxingdemo.util.MobileUtils;
 
-import java.util.List;
+import org.joda.time.DateTime;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
                     setTitle(R.string.title_parcel);
                     mViewPager.setCurrentItem(0);
                     return true;
-                case R.id.navigation_dashboard:
-                    setTitle(R.string.title_dashboard);
+                case R.id.navigation_list:
+                    setTitle(R.string.title_list);
                     mViewPager.setCurrentItem(1);
                     return true;
             }
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mNavigation.getMenu().getItem(0).setChecked(false);
             }
-            setTitle(position == 0 ? R.string.title_parcel : R.string.title_dashboard);
+            setTitle(position == 0 ? R.string.title_parcel : R.string.title_list);
             mNavigation.getMenu().getItem(position).setChecked(true);
             mMenuItem = mNavigation.getMenu().getItem(position);
         }
@@ -95,10 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(MailParcelFragment.newInstance(getString(R.string.title_parcel)));
-        adapter.addFragment(DashboardFragment.newInstance());
+        adapter.addFragment(ParcelListFragment.newInstance());
         mViewPager.setAdapter(adapter);
-
-
     }
 
 
@@ -117,6 +114,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!MobileUtils.isNetworkAvailable(this)) {
+            Snackbar.make(mViewPager, "请校连接网络", Toast.LENGTH_LONG).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    MainActivity.this.finish();
+                }
+            }, 4000);
+            return;
+        }
+
         ApiClient.service.getTimestamp().enqueue(new Callback<Timestamp>() {
             @Override
             public void onResponse(Call<Timestamp> call, Response<Timestamp> response) {
@@ -125,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d(TAG, "onResponse: current=" + current);
                 // Log.d(TAG, "onResponse: time.getTimestamp()=" + time.getTimestamp());
                 if (Math.abs(current - time.getTimestamp()) > 60) {
-                    Toast.makeText(MainActivity.this, "请校正手机时间", Toast.LENGTH_SHORT);
+                    Snackbar.make(mViewPager, "请校正手机时间", Toast.LENGTH_LONG).show();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {

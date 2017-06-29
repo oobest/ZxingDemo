@@ -35,6 +35,7 @@ public class ParcelCheckUtils {
                 if (data != null && data.getKdInfoList().size() > 0 && ("yuantong".equals(data.getKdInfoList().get(0).getComCode()))) {
                     result = RESULT_IS_YT;
                 }
+                result = RESULT_IS_YT;
                 checkCallback.onCallback(result);
             }
 

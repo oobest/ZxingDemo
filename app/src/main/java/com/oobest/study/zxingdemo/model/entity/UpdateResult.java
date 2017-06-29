@@ -7,13 +7,13 @@ import org.joda.time.DateTime;
  */
 
 public class UpdateResult {
-    private DateTime updateAt;
+    private DateTime updatedAt;
 
-    public DateTime getUpdateAt() {
-        return updateAt;
+    public DateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateAt(DateTime updateAt) {
-        this.updateAt = updateAt;
+    public void setUpdatedAt(DateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
