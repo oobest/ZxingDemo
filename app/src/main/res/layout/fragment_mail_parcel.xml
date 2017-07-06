@@ -7,7 +7,7 @@
 
 
     <ImageButton
-        android:id="@+id/scan_button"
+        android:id="@+id/scanButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"

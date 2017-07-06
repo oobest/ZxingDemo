@@ -27,6 +27,9 @@ public interface ApiService {
     @GET("1/classes/Parcel")
     Call<GetResults> getParcelList(@Query("where") String where);
 
+    @GET("1/classes/Parcel")
+    Call<GetResults> getParcelList(@Query("where") String where, @Query("limit") int limit, @Query("skip") int skip, @Query("order") String order);
+
     @GET("1/classes/Parcel/{objectId}")
     Call<Parcel> getParcel(@Path("objectId") String objectId);
 

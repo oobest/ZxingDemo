@@ -2,6 +2,7 @@ package com.oobest.study.zxingdemo;
 
 import android.Manifest;
 import android.app.KeyguardManager;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -560,7 +561,10 @@ public class CaptureActivity extends AppCompatActivity {
             Result result = decode(imageWidth, imageHeight, data, rect);
             mCapturePicture.release();
             if (result != null && !TextUtils.isEmpty(result.getText())) {
-
+                Intent intent = new Intent(CaptureActivity.this, ParcelActivity.class);
+                intent.setAction(Intent.ACTION_SEARCH);
+                intent.putExtra(SearchManager.QUERY, result.getText());
+                startActivity(intent);
             }
         }
     };

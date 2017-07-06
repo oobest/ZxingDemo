@@ -130,17 +130,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Timestamp> call, Response<Timestamp> response) {
                 Timestamp time = response.body();
-                int current = (int) (System.currentTimeMillis() / 1000);
-                // Log.d(TAG, "onResponse: current=" + current);
-                // Log.d(TAG, "onResponse: time.getTimestamp()=" + time.getTimestamp());
-                if (Math.abs(current - time.getTimestamp()) > 60) {
-                    Snackbar.make(mViewPager, "请校正手机时间", Toast.LENGTH_LONG).show();
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            MainActivity.this.finish();
-                        }
-                    }, 4000);
+                if (time != null) {
+
+
+                    int current = (int) (System.currentTimeMillis() / 1000);
+                    // Log.d(TAG, "onResponse: current=" + current);
+                    // Log.d(TAG, "onResponse: time.getTimestamp()=" + time.getTimestamp());
+                    if (Math.abs(current - time.getTimestamp()) > 60) {
+                        Snackbar.make(mViewPager, "请校正手机时间", Toast.LENGTH_LONG).show();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                MainActivity.this.finish();
+                            }
+                        }, 4000);
+                    }
                 }
             }
 

@@ -1,5 +1,6 @@
 package com.oobest.study.zxingdemo;
 
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
@@ -51,6 +52,8 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
 
     private ParcelAttrAdapter parcelAttrAdapter;
 
+    private ProgressDialog mProgressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,10 +91,10 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
             check(query);
         }
         parcelAttrAdapter.notifyDataSetChanged();
-        // parcelAttrAdapter.notifyItemChanged(0); 局部刷新
     }
 
     private void check(final String query) {
+        showProgressDialog();
         ParcelCheckUtils.isYt(query, new ParcelCheckUtils.Callback() {
             @Override
             public void onCallback(int result) {
@@ -102,6 +105,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                         break;
                     case ParcelCheckUtils.RESULT_IS_NOT_YT:
                         handleButton.setVisibility(View.INVISIBLE);
+                        hideProgressDialog();
                         break;
                     case ParcelCheckUtils.RESULT_FAILURE:
                         handleButton.setVisibility(View.INVISIBLE);
@@ -112,10 +116,22 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                                         check(query);
                                     }
                                 }).show();
+                        hideProgressDialog();
                         break;
                 }
             }
         });
+    }
+
+    private void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+        }
+        mProgressDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        mProgressDialog.hide();
     }
 
     private void queryParcel(final String query) {
@@ -129,10 +145,11 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                     if (data != null && data.getResults().size() > 0) {
                         Log.d(TAG, "onResponse: " + EntityUtils.gson.toJson(data));
                         populateData(data.getResults().get(0));
-                    }else{
+                    } else {
                         handleButton.setText("到货");
                         handleButton.setVisibility(View.VISIBLE);
                     }
+                    hideProgressDialog();
                 }
 
                 @Override
@@ -145,6 +162,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                                     check(query);
                                 }
                             }).show();
+                    hideProgressDialog();
                 }
             });
         } catch (JSONException e) {
@@ -170,6 +188,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
 
     private void receivedParcel() {
         try {
+            showProgressDialog();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("orderId", orderId);
             jsonObject.put("status", "到货");
@@ -185,6 +204,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                         handleButton.setText("签收");
                         parcelAttrAdapter.notifyDataSetChanged();
                     }
+                    hideProgressDialog();
                 }
 
                 @Override
@@ -196,6 +216,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                                     receivedParcel();
                                 }
                             }).show();
+                    hideProgressDialog();
                 }
             });
         } catch (JSONException e) {
@@ -205,6 +226,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
 
     private void sign() {
         try {
+            showProgressDialog();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("status", "签收");
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonObject.toString());
@@ -218,6 +240,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                         itemRows.add(new ItemRow("签收时间：", result.getUpdatedAt().toString(EntityUtils.df)));
                         parcelAttrAdapter.notifyDataSetChanged();
                     }
+                    hideProgressDialog();
                 }
 
                 @Override
@@ -230,6 +253,7 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
                                     sign();
                                 }
                             }).show();
+                    hideProgressDialog();
                 }
             });
         } catch (JSONException e) {
@@ -261,6 +285,15 @@ public class ParcelActivity extends AppCompatActivity implements View.OnClickLis
         public ItemRow(String label, String value) {
             this.label = label;
             this.value = value;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mProgressDialog != null) {
+            mProgressDialog.hide();
+            mProgressDialog = null;
         }
     }
 }
